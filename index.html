@@ -6,7 +6,7 @@
   <title>The Serious Founder's Method Book — Rachitsky &amp; Sons, Conservatory Press</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600&family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Cinzel:wght@400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600&family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Cinzel:wght@400;600;700&family=Caveat:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Noto+Music&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -24,33 +24,162 @@
       --note-border: rgba(139, 106, 30, 0.35);
       --warning-bg: rgba(139, 26, 26, 0.06);
       --warning-border: rgba(139, 26, 26, 0.35);
+      --pencil: rgba(58, 58, 42, 0.90);
+      --cream-worn: #f0e4bf;
     }
 
-    html { background: #c8b99a; }
+    html, body {
+      margin: 0; padding: 0;
+      height: 100%;
+      overflow: hidden;
+    }
 
     body {
       font-family: 'EB Garamond', 'Garamond', Georgia, serif;
-      font-size: 17.5px;
+      font-size: 19px;
       line-height: 1.72;
       color: var(--ink);
       background: var(--cream);
-      max-width: 820px;
-      margin: 40px auto;
-      padding: 0;
-      box-shadow: 0 4px 40px rgba(0,0,0,0.38), 0 0 0 1px rgba(100,80,40,0.18);
-      position: relative;
     }
 
-    /* ── Texture overlay ── */
-    body::before {
-      content: '';
+    /* ── Book scene ── */
+    #book-scene {
       position: fixed;
       inset: 0;
       pointer-events: none;
-      z-index: 9999;
-      background-image:
-        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='400' height='400' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
-      opacity: 0.6;
+    }
+
+    #book {
+      position: fixed;
+      inset: 0;
+      perspective: 1400px;
+      overflow: hidden;
+    }
+
+    /* Book page base — one page fills the full window */
+    .book-page {
+      position: absolute;
+      inset: 0;
+      background: var(--cream);
+      overflow-y: auto;
+      overflow-x: hidden;
+      display: flex;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .book-page.active {
+      opacity: 1;
+      pointer-events: auto;
+      z-index: 1;
+    }
+
+    /* Center the 680px content column within the full-window page */
+    .book-page > div {
+      width: 680px;
+      max-width: 100%;
+      flex-shrink: 0;
+    }
+
+    /* Grain texture on pages */
+    .book-page::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='400' height='400' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
+      opacity: 0.55;
+      pointer-events: none;
+      z-index: 999;
+    }
+
+    /* Page flip animations */
+    .book-page.page-exit-fwd {
+      animation: pageFlipOut 0.25s ease-in forwards;
+      opacity: 1;
+      pointer-events: none;
+      z-index: 2;
+    }
+    .book-page.page-enter-fwd {
+      animation: pageFlipIn 0.25s ease-out forwards;
+      animation-delay: 0.2s;
+      opacity: 0;
+      pointer-events: none;
+      z-index: 3;
+    }
+    .book-page.page-exit-back {
+      animation: pageFlipOutBack 0.25s ease-in forwards;
+      opacity: 1;
+      pointer-events: none;
+      z-index: 2;
+    }
+    .book-page.page-enter-back {
+      animation: pageFlipInBack 0.25s ease-out forwards;
+      animation-delay: 0.2s;
+      opacity: 0;
+      pointer-events: none;
+      z-index: 3;
+    }
+
+    @keyframes pageFlipOut {
+      0%   { opacity: 1; transform: rotateY(0deg) translateX(0); }
+      100% { opacity: 0; transform: rotateY(-90deg) translateX(-4%); }
+    }
+    @keyframes pageFlipIn {
+      0%   { opacity: 0; transform: rotateY(90deg) translateX(4%); }
+      100% { opacity: 1; transform: rotateY(0deg) translateX(0); }
+    }
+    @keyframes pageFlipOutBack {
+      0%   { opacity: 1; transform: rotateY(0deg) translateX(0); }
+      100% { opacity: 0; transform: rotateY(90deg) translateX(4%); }
+    }
+    @keyframes pageFlipInBack {
+      0%   { opacity: 0; transform: rotateY(-90deg) translateX(-4%); }
+      100% { opacity: 1; transform: rotateY(0deg) translateX(0); }
+    }
+
+    /* Nav arrows — fixed to viewport edges */
+    .book-arrow {
+      position: fixed;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(28,17,10,0.14);
+      border: none;
+      color: rgba(28,17,10,0.7);
+      width: 48px;
+      height: 84px;
+      cursor: pointer;
+      font-size: 22px;
+      border-radius: 4px;
+      transition: background 0.2s;
+      z-index: 1000;
+      pointer-events: auto;
+    }
+    .book-arrow:hover { background: rgba(28,17,10,0.24); }
+    .book-arrow:disabled { opacity: 0.2; cursor: default; }
+    #btn-prev { left: 12px; }
+    #btn-next { right: 12px; }
+
+
+    /* Keyboard hint */
+    @keyframes keyHintFade {
+      0%   { opacity: 1; }
+      75%  { opacity: 1; }
+      100% { opacity: 0; pointer-events: none; }
+    }
+    #key-hint {
+      position: fixed;
+      bottom: 42px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-family: 'EB Garamond', serif;
+      font-style: italic;
+      font-size: 15px;
+      color: rgba(28,17,10,0.5);
+      z-index: 1000;
+      white-space: nowrap;
+      animation: keyHintFade 4s ease-out forwards;
     }
 
     /* ══════════════════════════════════════════
@@ -382,9 +511,10 @@
     .tempo-marking {
       font-family: 'Playfair Display', serif;
       font-style: italic;
-      font-size: 16px;
+      font-size: 15px;
       color: var(--red);
       font-weight: 400;
+      white-space: nowrap;
     }
 
     .tempo-translation {
@@ -406,10 +536,12 @@
     .dedication {
       font-family: 'EB Garamond', serif;
       font-style: italic;
-      font-size: 13.5px;
+      font-size: 16.5px;
       color: var(--sepia);
-      text-align: right;
-      margin-bottom: 4px;
+      text-align: center;
+      margin: 24px 0 20px;
+      line-height: 1.5;
+      opacity: 0.9;
     }
 
     /* ── Staff divider ── */
@@ -645,17 +777,116 @@
       font-style: italic;
     }
 
+    /* ── Worn pages ── */
+    .worn { background: var(--cream-worn); }
+
+    /* ── Dog-eared corners ── */
+    .dog-ear::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 46px;
+      height: 46px;
+      background: linear-gradient(225deg, #a89465 50%, var(--cream) 50%);
+      z-index: 10;
+      pointer-events: none;
+      box-shadow: -2px 2px 4px rgba(0,0,0,0.12);
+    }
+    .worn.dog-ear::before {
+      background: linear-gradient(225deg, #a89465 50%, var(--cream-worn) 50%);
+    }
+
+    /* ── Margin annotations ── */
+    .annot { position: relative; }
+    .mn {
+      position: absolute;
+      font-family: 'Caveat', cursive;
+      color: var(--pencil);
+      pointer-events: none;
+      z-index: 20;
+      line-height: 1.25;
+    }
+    .mn.left {
+      left: -108px;
+      width: 98px;
+      text-align: right;
+    }
+    .mn.right {
+      right: -108px;
+      width: 98px;
+      text-align: left;
+    }
+
+    /* ── Five Things page ── */
+    .five-things-page {
+      padding: 72px 100px 72px 80px;
+      border-bottom: 1px solid rgba(28,17,10,0.15);
+      position: relative;
+      background: var(--cream);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      min-height: 70vh;
+    }
+    .hw-title {
+      font-family: 'Caveat', cursive;
+      font-size: 36px;
+      font-weight: 600;
+      color: var(--ink);
+      margin-bottom: 40px;
+      line-height: 1.1;
+    }
+    .hw-list {
+      list-style: none;
+      padding: 0;
+      counter-reset: hw-c;
+    }
+    .hw-item {
+      font-family: 'Caveat', cursive;
+      font-size: 22px;
+      color: var(--ink);
+      line-height: 1.45;
+      margin-bottom: 24px;
+      counter-increment: hw-c;
+      display: flex;
+      gap: 14px;
+    }
+    .hw-item::before {
+      content: counter(hw-c) ".";
+      font-family: 'Caveat', cursive;
+      font-size: 22px;
+      color: var(--sepia);
+      flex-shrink: 0;
+      width: 28px;
+    }
+    .hw-item:nth-child(2) { margin-bottom: 30px; }
+    .hw-item:nth-child(4) { margin-bottom: 18px; }
+    .hw-note {
+      font-family: 'Caveat', cursive;
+      font-size: 16px;
+      color: var(--pencil);
+      display: inline-block;
+      transform: rotate(-1.6deg);
+      margin-top: 30px;
+      border-bottom: 1px solid rgba(90,90,74,0.45);
+      padding-bottom: 3px;
+    }
+
     /* ── Utility ── */
     strong { font-weight: 600; }
     em { font-style: italic; }
   </style>
 </head>
 <body>
+<div id="book-scene">
+  <button class="book-arrow" id="btn-prev" disabled>&#8592;</button>
+  <div id="book">
 
 <!-- ═══════════════════════════════════════════════
-     COVER PAGE
+     PAGE 1: COVER
 ═══════════════════════════════════════════════ -->
-<div class="cover">
+<div class="book-page hard cover-page"><div class="cover">
   <div class="cover-border"></div>
 
   <div>
@@ -691,13 +922,29 @@
     <span class="publisher-city">New York · London · San Francisco</span>
     <p class="catalog-no">Catalog No. R&amp;S–1965–001 · ISMN: M–SFM–0001–X</p>
   </div>
-</div>
+</div></div><!-- /cover /book-page -->
 
 
 <!-- ═══════════════════════════════════════════════
-     TABLE OF CONTENTS
+     PAGE 2: FIVE THINGS TO REMEMBER
 ═══════════════════════════════════════════════ -->
-<div class="page">
+<div class="book-page"><div class="five-things-page">
+  <p class="hw-title">Five Things to Remember</p>
+  <ol class="hw-list">
+    <li class="hw-item">The customer's exact words. Not your interpretation. Their words.</li>
+    <li class="hw-item">Retention tells you the truth. Everything else is a story you're telling yourself.</li>
+    <li class="hw-item">You cannot position your way out of a product problem. Fix the product.</li>
+    <li class="hw-item">The right hire is worth the hundred hours. The wrong one costs you a year.</li>
+    <li class="hw-item">If your gut says pivot, it's probably time. You already know.</li>
+  </ol>
+  <span class="hw-note">re-read before everything important</span>
+</div></div><!-- /five-things /book-page -->
+
+
+<!-- ═══════════════════════════════════════════════
+     PAGE 3: TABLE OF CONTENTS
+═══════════════════════════════════════════════ -->
+<div class="book-page dog-ear"><div class="page">
   <div class="page-header">
     <span class="running-head">Table of Contents</span>
     <span class="page-number">iii</span>
@@ -817,25 +1064,25 @@
       </div>
     </div>
   </div>
-</div>
+</div></div><!-- /page /book-page (TOC) -->
 
 
 <!-- ═══════════════════════════════════════════════
-     COPYRIGHT PAGE
+     PAGE 4: COPYRIGHT PAGE
 ═══════════════════════════════════════════════ -->
-<div class="copyright-page">
+<div class="book-page"><div class="copyright-page">
   <p>First published MCMLXII. Second Edition, revised and corrected, MCMLXV.</p>
   <p>All rights reserved. No portion of this volume may be reproduced, transmitted, or performed in a funding pitch without the written consent of the publisher. Inquiries regarding institutional licensing should be directed to the Conservatory's Office of Applied Product Science.</p>
   <p>The Faculty wishes to acknowledge that some practitioners will read the études contained herein as clever. They are not. They are method studies. The student who approaches them as anything other than earnest technical instruction will derive from them only the instruction they deserve, which is none.</p>
   <p style="margin-top: 24px;">℗ MCMLXV Rachitsky &amp; Sons, Conservatory Press. Printed on acid-free paper.</p>
   <p><em>Dedicated to the Early Adopter, wherever they may have gone.</em></p>
-</div>
+</div></div><!-- /copyright /book-page -->
 
 
 <!-- ═══════════════════════════════════════════════
-     FOREWORD
+     PAGE 5: FOREWORD
 ═══════════════════════════════════════════════ -->
-<div class="page">
+<div class="book-page dog-ear worn"><div class="page">
   <div class="page-header">
     <span class="running-head">The Serious Founder's Method Book</span>
     <span class="page-number">v</span>
@@ -857,13 +1104,13 @@
     — <em>The Faculty, Conservatory of Applied Product Science</em><br>
     <span style="font-size: 13px; font-style: normal; color: var(--sepia);">Autumn, MCMLXV</span>
   </div>
-</div>
+</div></div><!-- /book-page (Foreword) -->
 
 
 <!-- ═══════════════════════════════════════════════
      ÉTUDE I: TALKING TO CUSTOMERS
 ═══════════════════════════════════════════════ -->
-<div class="page">
+<div class="book-page"><div class="page">
   <div class="page-header">
     <span class="running-head">Op. 1, No. 1 · First Position: The Customer Inquiry</span>
     <span class="page-number">7</span>
@@ -897,27 +1144,33 @@
     <p>The faculty's preferred method for these conversations proceeds in a sequence the Y Combinator curriculum has established through extensive trial. What software is the customer currently using to address this problem? What are they paying for it? What problems does their current solution fail to address? How intensely do they feel those problems? These questions are arranged in ascending order of diagnostic value, and the final question — the intensity of the felt problem — is the one most frequently omitted and the one that most directly predicts whether anyone will pay for a solution. The practitioner should listen. The practitioner should not pitch. The student who pitches during a discovery conversation has mistaken the audition for the concert, and the customer — who had no intention of attending a concert — will exit without comment, because the comment is not the kind they are prepared to make to a person they have just met. The Airbnb founders, upon being asked by Paul Graham why they were sitting in their office rather than in New York talking to their hosts, departed for New York. What they learned there — what was broken, what hosts needed, what the product had not yet understood — is documented. What would have happened had they not gone is also, in a sense, documented: it would have looked like every other company that remained in the office.</p>
   </div>
 
+  <div class="annot">
+    <span class="mn left" style="top: 12px; font-size: 18px; transform: rotate(-2.5deg);">with feeling</span>
   <div class="faculty-note">
     <span class="faculty-note-label">Faculty Note</span>
     <p>Gustaf Alstromer is a Group Partner at Y Combinator and former lead of Airbnb's original growth team. His identification of talking to customers as the single root-cause failure pattern — <em>"if I drill down what makes companies fail, it's quite simple: they don't talk to users, which means they don't find product-market fit, and if they don't find product-market fit, nothing else really matters"</em> — is reproduced from the conservatory lecture with the original language preserved. His observation regarding the early-adopter distribution (approximately ten percent of any given market) and the practical volume required (reaching out to one hundred contacts to secure twenty-five to fifty substantive conversations) constitutes the quantitative foundation of this étude's practice assignment. The Paul Graham anecdote regarding Airbnb is a matter of YC institutional record, confirmed by multiple participants including Alstromer himself.</p>
     <cite>Primary source: G. Alstromer, "Gustaf Alstromer on YC, growth, and the most common startup mistakes," Lenny's Podcast, 2 March 2023.</cite>
   </div>
+  </div><!-- /annot -->
 
+  <div class="annot">
+    <span class="mn right" style="top: 10px; font-size: 17px; transform: rotate(1.8deg);">do this<br>always</span>
   <div class="practice-box">
     <span class="practice-box-label">Practice Assignment — Complete Before Proceeding</span>
     <div class="practice-item">Contact twenty potential users this week. Do not pitch. Ask only: "What is the hardest part of [the problem your product addresses]?" Write down the exact words each person uses — not your interpretation of what they meant, but the words themselves.</div>
     <div class="practice-item">On your next discovery call, set a timer. If you have spoken for more than thirty percent of the call's elapsed time, the call was a pitch, not a discovery session. Schedule a replacement call and do not speak first.</div>
     <div class="practice-item">Read your product's current homepage copy. Underline every phrase that originated in a direct customer conversation. Count the underlined phrases and the unmarked ones. This ratio is a measurement. Improve it before the next session.</div>
   </div>
+  </div><!-- /annot -->
 
   <div class="staff-end"></div>
-</div>
+</div></div><!-- /étude I /book-page -->
 
 
 <!-- ═══════════════════════════════════════════════
      ÉTUDE II: DO THINGS THAT DON'T SCALE
 ═══════════════════════════════════════════════ -->
-<div class="page">
+<div class="book-page worn"><div class="page">
   <div class="page-header">
     <span class="running-head">Op. 1, No. 2 · Allegro for the Unautomated Task</span>
     <span class="page-number">17</span>
@@ -946,11 +1199,17 @@
   <div class="etude-body">
     <p>The practitioner who reaches for the mechanism before the melody has been established by hand has committed a technical error that no subsequent sophistication of the mechanism will correct. The mechanism, once engaged, will execute with great efficiency whatever it has been configured to execute. If it has been configured to deliver something that the customer does not in fact want, it will deliver that thing at scale, with increasing confidence, until the practitioner notices — which is typically later than the customer did. The faculty has observed no case in which automating an unvalidated process produced a validated outcome. The direction of causality is irreversible: the hand first, the mechanism second. This is not a philosophical preference. It is a sequence constraint.</p>
 
+    <div class="annot">
+    <span class="mn left" style="top: 6px; font-size: 32px; width: 118px; left: -126px; transform: rotate(-3deg); letter-spacing: 3px;">!!!!</span>
     <p>Joe Gebbia, co-founder of Airbnb, has described the moment at which this permission was granted to him with a clarity that the faculty considers irreproducible in paraphrase: "It wasn't until our first session with Paul Graham at Y Combinator where we basically — the first time someone gave us permission to do things that don't scale, and it was in that moment, and I'll never forget it because it changed the trajectory of the business." The faculty notes the vocabulary of permission. The aspiring practitioner typically understands, at some level, that direct, manual, unscalable action is available to them. What they require is permission — which is to say, absolution from the expectation that every action must be designed for infinite repetition before it is attempted once. This absolution is freely granted by the faculty. The student may proceed.</p>
 
+    </div><!-- /annot -->
+    <div class="annot">
+    <span class="mn right" style="top: 50px; font-size: 20px; transform: rotate(2deg);">play big</span>
     <p>Crystal Widjaja, who led growth at Gojek at enormous scale and has advised many early-stage companies since, has offered a quantitative frame for the value of manual execution that the faculty finds clarifying: every idea is cheap at thirty people. The student should therefore spend their most productive early hours not in the automation of process but in the direct, manual, and effortful execution of the thing they eventually intend to automate — because it is only through this manual execution that the thing worth automating can be identified. The question that automation answers is "how do I do this faster?" The question that manual execution answers is "is this the right thing to do?" The second question must precede the first. Lenny Rachitsky has offered the faculty's preferred formulation of the correct sequencing: "Do things that don't scale, and then scale the things that you're doing." The order of operations is non-negotiable. The student who reverses it will find themselves in possession of a very efficient mechanism for delivering something that required, above all, reconsideration.</p>
   </div>
 
+    </div><!-- /annot -->
   <div class="faculty-note">
     <span class="faculty-note-label">Faculty Note</span>
     <p>The principle addressed in this étude has been independently confirmed by guest faculty across many sessions: Keith Yandell (DoorDash) has noted that doing things that don't scale "is as relevant today as it was then"; Brian Tolkin (Opendoor, Uber) endorsed the faculty's preferred formulation during a conservatory lecture; Gustaf Alströmer (Y Combinator) has identified it as among the most reliably generative pieces of advice the organization provides to incoming companies. The Gebbia quotation was preserved verbatim from Lenny's Newsletter's account of Airbnb's early history, where it appears in the context of the company's now-famous practice of personally photographing host apartments in New York — an act that was entirely manual, entirely unscalable, and entirely responsible for the product's early traction.</p>
@@ -965,13 +1224,13 @@
   </div>
 
   <div class="staff-end"></div>
-</div>
+</div></div><!-- /étude II /book-page -->
 
 
 <!-- ═══════════════════════════════════════════════
      ÉTUDE III: PRICING
 ═══════════════════════════════════════════════ -->
-<div class="page">
+<div class="book-page dog-ear worn"><div class="page">
   <div class="page-header">
     <span class="running-head">Op. 1, No. 3 · Variations on a Value Metric</span>
     <span class="page-number">27</span>
@@ -1019,13 +1278,13 @@
   </div>
 
   <div class="staff-end"></div>
-</div>
+</div></div><!-- /étude III /book-page -->
 
 
 <!-- ═══════════════════════════════════════════════
      ÉTUDE IV: POSITIONING
 ═══════════════════════════════════════════════ -->
-<div class="page">
+<div class="book-page"><div class="page">
   <div class="page-header">
     <span class="running-head">Op. 1, No. 4 · The Exercise of Competitive Alternatives</span>
     <span class="page-number">37</span>
@@ -1054,10 +1313,16 @@
   <div class="etude-body">
     <p>The practitioner who lacks a clear position is not modest. They are inaudible. April Dunford, who has worked with more than two hundred companies on the specific technical problem of positioning — including organizations of the stature of Google, IBM, and Postman — defines the requirement with economical precision: positioning establishes how your product is the best in the world at delivering some value that a well-defined set of companies care a great deal about. Each element of this definition is load-bearing. The word "best" requires that the product be superior to alternatives in a specific, demonstrable way. The phrase "well-defined set" requires that the target be named, not gestured toward. The phrase "care a great deal about" requires evidence, not assumption.</p>
 
+    <div class="annot">
+    <span class="mn left" style="top: 28px; font-size: 17px; transform: rotate(-1.8deg);">this one<br>hurt</span>
     <p>The diagnostic for weak positioning is the additional sales call. When a customer requires a second meeting to understand what they heard in the first, the positioning has failed. The practitioner may further identify this condition by accompanying the sales team on calls and listening for the customer who says, "Back up and pitch it to me again" — or, more damaging still, "I can do this on a spreadsheet; why do I need you?" Dunford notes that in B2B markets, approximately forty percent of lost deals are lost not to a named competitor but to inaction: to the spreadsheet, to the intern, to the status quo. The practitioner who is not explicitly positioning against the status quo is conceding forty percent of their market without contest, which the faculty considers an unacceptable technical error.</p>
 
+    </div><!-- /annot -->
+    <div class="annot">
+    <span class="mn right" style="top: 10px; font-size: 13px; transform: rotate(1.5deg); line-height: 1.3;">re-read before<br>every board<br>meeting</span>
     <p>The five-component positioning exercise proceeds as follows. First, name the competitive alternatives — every option available to the customer who does not choose your product, including doing nothing. Second, identify the unique attributes of your product relative to those alternatives. Third, translate those attributes into differentiated value — what the customer can do, earn, or avoid that they could not without you. Fourth, identify the characteristics of customers who care specifically about that differentiated value, which is the definition of your target segment. Fifth, name the market context in which your value is most legible to the people you are going after. Dunford's experience is that this exercise takes one week and produces more clarity than any quantity of branding discussion. The faculty has found no credible reason to dispute this estimate.</p>
 
+    </div><!-- /annot -->
     <div class="caution">
       <strong>Caution to the Student</strong>
       The faculty notes that positioning problems are frequently misidentified as product problems, messaging problems, or sales execution problems. The root cause is almost always misalignment between what the founding team believes they are communicating and what the customer is actually receiving. Attend to the source, not the symptoms.
@@ -1078,13 +1343,13 @@
   </div>
 
   <div class="staff-end"></div>
-</div>
+</div></div><!-- /étude IV /book-page -->
 
 
 <!-- ═══════════════════════════════════════════════
      ÉTUDE V: RETENTION
 ═══════════════════════════════════════════════ -->
-<div class="page">
+<div class="book-page"><div class="page">
   <div class="page-header">
     <span class="running-head">Op. 1, No. 5 · On the Sustaining of the User</span>
     <span class="page-number">47</span>
@@ -1115,6 +1380,8 @@
 
     <p>The faculty has assembled, through consultation with twenty of the most experienced growth practitioners then working, a set of concrete benchmarks for what constitutes adequate and excellent retention at the six-month interval. These are not aspirational targets. They are the minimum threshold of competence expected at this conservatory. Consumer social practitioners are expected to sustain no fewer than twenty-five percent of their original cohort; excellent practitioners sustain forty-five. Enterprise practitioners are held to a higher standard, with the adequate threshold at seventy percent and excellence beginning at ninety. The student who finds their numbers below the adequate line is not failed — they are redirected, which is a form of teaching.</p>
 
+    <div class="annot">
+    <span class="mn left" style="top: 8px; font-size: 16px; transform: rotate(-2deg);">don't<br>forget<br>this</span>
     <table class="benchmark-table">
       <thead>
         <tr>
@@ -1132,8 +1399,12 @@
       </tbody>
     </table>
 
+    </div><!-- /annot -->
+    <div class="annot">
+    <span class="mn right" style="top: 0px; font-size: 38px; right: -196px; width: 184px; transform: rotate(2.2deg); line-height: 1.1;">always #1.<br>always.</span>
     <p>Seven technical corrections are available to the practitioner whose retention falls below the adequate line. They are presented here in order of expected impact, not order of ease. The first correction is to improve the product — to solve the customer's problem more completely, more reliably, or at lower cost. This correction is the most fundamental and the most difficult. The second correction is to improve onboarding, which is to say: to ensure that the value already present in the instrument is reliably communicated to the new student. Andrew Chen, former head of growth at Uber and now a partner at Andreessen Horowitz, has offered the observation that most product teams attend to the wrong end of this problem: they add features for customers who are already retained, when the actual technical leverage lies entirely in the experience of those who are encountering the instrument for the first time. The faculty endorses this observation without reservation.</p>
 
+    </div><!-- /annot -->
     <p>The remaining five corrections — making the product stickier, catching departing users before they have fully exited, reminding users of the value they are receiving, retrieving users who have already departed, and changing the composition of the user base itself — are presented not in diminishing order of importance but in diminishing order of glamour. The final correction, adjusting the quality and intent of users being acquired, requires no technical virtuosity. It requires only the honesty to acknowledge that paid acquisition traffic behaves differently from organic traffic, and that optimizing for a retention metric while simultaneously degrading the quality of the cohort is a form of arithmetic self-deception.</p>
 
     <div class="caution">
@@ -1156,13 +1427,13 @@
   </div>
 
   <div class="staff-end"></div>
-</div>
+</div></div><!-- /étude V /book-page -->
 
 
 <!-- ═══════════════════════════════════════════════
      ÉTUDE VI: THE PIVOT
 ═══════════════════════════════════════════════ -->
-<div class="page">
+<div class="book-page"><div class="page">
   <div class="page-header">
     <span class="running-head">Op. 1, No. 6 · Modulation to a New Key</span>
     <span class="page-number">57</span>
@@ -1210,13 +1481,13 @@
   </div>
 
   <div class="staff-end"></div>
-</div>
+</div></div><!-- /étude VI /book-page -->
 
 
 <!-- ═══════════════════════════════════════════════
      ÉTUDE VII: PRODUCT-MARKET FIT
 ═══════════════════════════════════════════════ -->
-<div class="page">
+<div class="book-page"><div class="page">
   <div class="page-header">
     <span class="running-head">Op. 1, No. 7 · The Prelude to the First Movement</span>
     <span class="page-number">67</span>
@@ -1247,10 +1518,13 @@
 
     <p>The faculty has observed that product-market fit presents itself across four distinct registers: nascent, developing, strong, and extreme. The student will wish to know that approximately sixty percent of practicing startups will never advance beyond the developing register. This statistic is offered not as discouragement but as a calibration. The student who locates themselves accurately within this taxonomy — neither inflating their register out of optimism nor deflating it out of false modesty — is already in possession of information that the majority of their cohort lacks. Correct self-diagnosis is a prerequisite for correct treatment.</p>
 
+    <div class="annot">
+    <span class="mn left" style="top: 12px; font-size: 16px; transform: rotate(-1.5deg);">don't<br>forget<br>this</span>
     <blockquote>
       In general, hiring before you get product-market fit slows you down, and hiring after you get product-market fit speeds you up. Until you get product-market fit, you want to: live as long as possible, and iterate as quickly as possible.
       <cite>— Sam Altman, as cited in Lenny's Newsletter</cite>
     </blockquote>
+    </div><!-- /annot -->
 
     <p>The diagnostic for genuine product-market fit is neither a survey nor a Net Promoter Score. It is the behavior of the retention curve. When the curve flattens, when users return without prompting, when the loss of the product would cause genuine disruption rather than mild inconvenience — the practitioner has found what they were looking for. Todd Jackson of First Round Capital, who has studied this problem with unusual rigor, identifies three further dimensions by which a healthy fit may be recognized: the demand for the product is clear and demonstrable; the product satisfies that demand better than available alternatives; and the efficiency of delivery is sufficient to sustain the enterprise. The practitioner who can affirm all three has located the starting line. What comes before is preparation. What comes after is the race.</p>
 
@@ -1271,13 +1545,13 @@
   </div>
 
   <div class="staff-end"></div>
-</div>
+</div></div><!-- /étude VII /book-page -->
 
 
 <!-- ═══════════════════════════════════════════════
      ÉTUDE VIII: HIRING
 ═══════════════════════════════════════════════ -->
-<div class="page">
+<div class="book-page worn"><div class="page">
   <div class="page-header">
     <span class="running-head">Op. 1, No. 8 · The Assembly of the Chamber Ensemble</span>
     <span class="page-number">77</span>
@@ -1306,9 +1580,15 @@
   <div class="etude-body">
     <p>The first ensemble is not assembled through advertisements. It is assembled through the clarity and ambition of the mission as articulated by the founder. Kevin Tan of Snackpass has described the mechanism with the precision of a principal player who has solved the technical problem: "Articulating a crystal clear and ambitious vision makes it easy for candidates to visualize what they are building towards for the next five years." The candidate who cannot, after a conversation with the founder, construct a credible picture of what the next five years might contain will decline, and correctly so. The vision is not a recruitment device. It is the instrument itself. The recruitment is the natural consequence of a candidate encountering an instrument they wish to play.</p>
 
+    <div class="annot">
+    <span class="mn left" style="top: 8px; font-size: 16px; transform: rotate(-2deg); line-height: 1.25;">don't lower<br>the bar.<br>ever.</span>
     <p>The composition of the early ensemble creates a dynamic of compounding consequence. First-rate musicians attract other first-rate musicians; the bar, once set at the correct height, tends to remain there through the internal demands of those who have already cleared it. Nick Handel of Transform has provided the technical caution that bears reproduction here without abbreviation: "Never lower your recruiting bar to hire someone because they can fill a short-term need. It will be very tempting to bring someone on if they are in front of you and ready to go, but it will have longer-term negative consequences if they are not the right person." The vacant chair is preferable to the misplaced musician. A vacant chair creates silence, which is uncomfortable. A misplaced musician creates dissonance, which is considerably worse, and is considerably harder to correct after the fact.</p>
 
+    </div><!-- /annot -->
+    <div class="annot">
+    <span class="mn right" style="top: 20px; font-size: 14px; transform: rotate(1.8deg); line-height: 1.25;">this is real.<br>i counted.</span>
     <p>The practitioner who wishes to understand the actual work required to build a great early ensemble should attend carefully to the quantification provided by Sam Corcos of Levels: approximately one hundred hours per hire. The faculty neither endorses nor contests this figure; the faculty reproduces it because students routinely underestimate the investment required by a factor of eight to ten. The student who has spent twelve hours searching for a candidate and finds themselves without one should understand that eighty-eight hours remain in the exercise, not that the suitable candidate does not exist. Further: the best candidates are rarely actively seeking positions. They are encountered through a persistent, unhurried, and methodical cultivation of relationship. Siqi Chen of Runway has observed that their best hires were people who were not looking at the time of first contact — and who were slowly won over the course of approximately six months. The closing of a great hire resembles, in its structure, the closing of a great investor: it is a process of conviction, not a transaction.</p>
+    </div><!-- /annot -->
   </div>
 
   <div class="faculty-note">
@@ -1325,13 +1605,13 @@
   </div>
 
   <div class="staff-end"></div>
-</div>
+</div></div><!-- /étude VIII /book-page -->
 
 
 <!-- ═══════════════════════════════════════════════
      ÉTUDE IX: GO-TO-MARKET
 ═══════════════════════════════════════════════ -->
-<div class="page">
+<div class="book-page"><div class="page">
   <div class="page-header">
     <span class="running-head">Op. 1, No. 9 · The Concert Hall Approach</span>
     <span class="page-number">87</span>
@@ -1379,19 +1659,20 @@
   </div>
 
   <div class="staff-end"></div>
-</div>
+</div></div><!-- /étude IX /book-page -->
 
 
 <!-- ═══════════════════════════════════════════════
      ÉTUDE X: PREMATURE SCALING
 ═══════════════════════════════════════════════ -->
-<div class="page">
+<div class="book-page"><div class="page">
   <div class="page-header">
     <span class="running-head">Op. 1, No. 10 · Study for the Precipitous Left Hand</span>
     <span class="page-number">97</span>
   </div>
 
-  <div class="etude-header">
+  <div class="etude-header annot">
+    <span class="mn right" style="top: 6px; font-size: 24px; right: -96px; width: 88px; transform: rotate(3deg);">ouch</span>
     <p class="etude-opus">Étude X · Opus 1, No. 10 · Grade I (In Theory) / Grade VIII (In Practice)</p>
     <h2 class="etude-title">Study for the Precipitous Left Hand</h2>
     <p class="etude-subtitle">On the Error of Tempo and Its Consequences</p>
@@ -1418,10 +1699,13 @@
 
     <p>The corrective technique is not, as some students conclude, to practice more slowly in all things. It is rather to identify precisely which activities require the foundation of product-market fit before they can produce their intended returns, and to sequence those activities accordingly. Hiring a head of sales before the sales motion is understood is an example of this error. Investing in paid acquisition before the retention curve has flattened is another. Expanding the product surface area before the core use case has proven itself is a third. Each of these errors shares a common structure: the cart is placed before the horse with great efficiency and at considerable expense. The horse, when it arrives, is confused. The cart has already been optimized for a different animal.</p>
 
+    <div class="annot">
+    <span class="mn right" style="top: 0px; font-size: 42px; right: -210px; width: 198px; transform: rotate(2.5deg); line-height: 1.1;">don't forget<br>to breathe</span>
     <blockquote>
       Raise capital when you are confident that you can use it to attain a higher growth rate and the higher growth rate is worth the trade-off in dilution.
       <cite>— Tomasz Tunguz, as reproduced in Lenny's Newsletter</cite>
     </blockquote>
+    </div><!-- /annot -->
   </div>
 
   <div class="faculty-note">
@@ -1438,13 +1722,13 @@
   </div>
 
   <div class="staff-end"></div>
-</div>
+</div></div><!-- /étude X /book-page -->
 
 
 <!-- ═══════════════════════════════════════════════
      BACK MATTER
 ═══════════════════════════════════════════════ -->
-<div class="back-matter">
+<div class="book-page"><div class="back-matter">
   <div class="page-header">
     <span class="running-head">Source Notes &amp; Acknowledgments</span>
     <span class="page-number">107</span>
@@ -1493,7 +1777,66 @@
       The conservatory makes no warranty, express or implied, regarding market conditions, investor sentiment, or the behavior of users in the sixth month.
     </p>
   </div>
-</div>
+</div></div><!-- /back-matter /book-page -->
+
+  </div><!-- /book -->
+  <button class="book-arrow" id="btn-next">&#8594;</button>
+</div><!-- /book-scene -->
+<div id="key-hint">← → keys to turn pages</div>
+
+<script>
+(function () {
+  var pages = Array.from(document.querySelectorAll('.book-page'));
+  var current = 0;
+  var animating = false;
+  var ANIM_MS = 500; // exit 0.25s + delay 0.2s + enter 0.25s
+
+  // Show first page
+  pages[0].classList.add('active');
+  updateNav();
+
+  function navigate(dir) {
+    var next = current + dir;
+    if (animating || next < 0 || next >= pages.length) return;
+
+    animating = true;
+    var outPage = pages[current];
+    var inPage  = pages[next];
+
+    var exitCls  = dir > 0 ? 'page-exit-fwd'  : 'page-exit-back';
+    var enterCls = dir > 0 ? 'page-enter-fwd' : 'page-enter-back';
+
+    outPage.classList.remove('active');
+    outPage.classList.add(exitCls);
+    inPage.classList.add(enterCls);
+
+    updateNav(next); // update buttons immediately
+
+    setTimeout(function () {
+      outPage.classList.remove(exitCls);
+      inPage.classList.remove(enterCls);
+      inPage.classList.add('active');
+      inPage.scrollTop = 0;
+      current = next;
+      animating = false;
+    }, ANIM_MS);
+  }
+
+  function updateNav(idx) {
+    var i = (idx !== undefined) ? idx : current;
+    document.getElementById('btn-prev').disabled = (i <= 0);
+    document.getElementById('btn-next').disabled = (i >= pages.length - 1);
+  }
+
+  document.getElementById('btn-prev').addEventListener('click', function () { navigate(-1); });
+  document.getElementById('btn-next').addEventListener('click', function () { navigate(1); });
+
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')    navigate(-1);
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown')  navigate(1);
+  });
+})();
+</script>
 
 </body>
 </html>
